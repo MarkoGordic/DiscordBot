@@ -17,6 +17,7 @@ class MusicQuiz(commands.Cog):
         self.quiz_ctx = None
         self.quiz_channel = None
         self.is_running = False
+        self.guessing_enabled = False
         self.skippers = []
         self.leaderboard = {}
         self.track_name_guessed = False
@@ -26,7 +27,7 @@ class MusicQuiz(commands.Cog):
 
         @client.event
         async def on_message(message):
-            if message.channel.id == self.quiz_channel:
+            if message.channel.id == self.quiz_channel and self.guessing_enabled:
                 if message.content != "":
                     user_message = str.lower(str(message.content))
 
@@ -34,6 +35,8 @@ class MusicQuiz(commands.Cog):
                         correct = str.lower(str(self.track_names[0])) + " " + str.lower(str(self.artist_names[0]))
                         correct_rev = str.lower(str(self.artist_names[0])) + " " + str.lower(str(self.track_names[0]))
                         if user_message == correct or user_message == correct_rev:
+                            await message.add_reaction('\N{THUMBS UP SIGN}')
+
                             if not self.track_name_guessed:
                                 self.track_name_guessed = True
 
@@ -55,6 +58,7 @@ class MusicQuiz(commands.Cog):
                                 await self.quiz_ctx.send(message.author.mention + " guessed artist name!")
                     elif user_message == str.lower(str(self.track_names[0])) and not self.track_name_guessed:
                         self.track_name_guessed = True
+                        await message.add_reaction('\N{THUMBS UP SIGN}')
 
                         if str(message.author) in self.leaderboard:
                             self.leaderboard[str(message.author)] = self.leaderboard[str(message.author)] + 1
@@ -64,6 +68,7 @@ class MusicQuiz(commands.Cog):
                         await self.quiz_ctx.send(message.author.mention + " guessed track name!")
                     elif user_message == str.lower(str(self.artist_names[0])) and not self.artist_name_guessed:
                         self.artist_name_guessed = True
+                        await message.add_reaction('\N{THUMBS UP SIGN}')
 
                         if str(message.author) in self.leaderboard:
                             self.leaderboard[str(message.author)] = self.leaderboard[str(message.author)] + 1
@@ -72,6 +77,7 @@ class MusicQuiz(commands.Cog):
 
                         await self.quiz_ctx.send(message.author.mention + " guessed artist name!")
                     if self.track_name_guessed and self.artist_name_guessed:
+                        self.guessing_enabled = False
                         await self.next_track()
 
             await client.process_commands(message)
@@ -89,6 +95,7 @@ class MusicQuiz(commands.Cog):
             self.skippers.append(ctx.message.author)
 
             if len(self.skippers) >= int(members):
+                self.guessing_enabled = False
                 await ctx.send("Skipping track!")
                 await self.next_track()
             else:
@@ -156,6 +163,8 @@ class MusicQuiz(commands.Cog):
                     await self.quiz_ctx.send("The track was " + self.track_names[0] + " by " + self.artist_names[0] + " !")
                     self.track_names.pop(0)
                     self.artist_names.pop(0)
+
+                self.guessing_enabled = True
 
                 if self.track_names[0] == '':
                     self.track_name_guessed = True
