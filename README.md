@@ -24,6 +24,11 @@ Custom Discord bot with music quiz and music playback functionality.
 
 Bot's command prefix is **?**
 
+### Moderation Commands :hammer_and_wrench:
+
+- `?kick member_mention` -> bot will kick mentioned member if you have needed permissions
+- `?ban member_mention` -> bot will ban mention member if you have needed permissions
+
 ### Voice Chat Commands :microphone:
 
 - `?join` -> bot will join voice channel you're in
